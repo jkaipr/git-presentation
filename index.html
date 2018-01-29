@@ -1,0 +1,313 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>git rebase & merge</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<style>
+			.reveal section .bg-white {
+				background-color: white;
+			}
+			.reveal section .svg {
+				width: 60%;
+			}
+			.reveal pre {
+				width: 100%;
+			}
+			.reveal pre code {
+				max-height: initial;
+			}
+			.reveal .hljs-deletion, .reveal .hljs-string, .reveal .hljs-built_in,
+			.reveal .hljs-builtin-name, .reveal .hljs-keyword {
+				color: #dcdcdc;
+			}
+			.reveal table {
+				font-size: 30px;
+			}
+		</style>
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section data-markdown>
+					<textarea data-template>
+						# Git Deep Dive
+
+						## On a quest for cleaner git history <!-- .element: class="fragment" -->
+
+						### Merge, rebase, interactive rebase and amend <!-- .element: class="fragment" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						## Rebase and merge
+						Both solve the same problem. <!-- .element: class="fragment" -->
+
+						Integrating changes from one branch into another. <!-- .element: class="fragment" -->
+
+						They do it very differently. <!-- .element: class="fragment" -->
+
+						Let's look at merge first. <!-- .element: class="fragment" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						Master and feature branch
+						![Master and branch](img/master_and_branch_basic.svg) <!-- .element: class="bg-white svg" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						Merging master into feature branch
+						```shell
+						git checkout feature
+						git merge master
+						```
+						![Merge](img/merge_feature_into_master.svg) <!-- .element: class="bg-white svg" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						Merge is nice because it's a non-destructive operation.
+
+						On the other hand it adds an additional commit every time you wan't to synchronize with latest changes. <!-- .element: class="fragment" -->
+
+						In case the main branch is very active, feature branches might end up with several merge commits, polluting the branches history. <!-- .element: class="fragment" -->
+
+						Let's look at rebase now. <!-- .element: class="fragment" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						Master and feature branch
+						![Master and branch](img/master_and_branch_basic.svg) <!-- .element: class="bg-white svg" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						Rebasing feature branch on top of master
+						```shell
+						git checkout feature
+						git rebase master
+						```
+						![Rebase](img/rebase_feature_onto_master.svg) <!-- .element: class="bg-white svg" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						Rebase moves the entire branch to begin on the tip of the branch it's being rebased onto.
+
+						Instead of using a merge commit, rebase re-writes the projects history by creating brand new commits for each commit in the original branch. <!-- .element: class="fragment" -->
+
+						In case the main branch is very active, feature branches might end up with several merge commits, polluting the branches history. <!-- .element: class="fragment" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						## Interactive rebase
+
+						```shell
+						git rebase -i develop
+						```
+
+						Executing this command on a feature branch is going to give you something like the following. <!-- .element: class="fragment" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						```shell
+						pick 1fee70a10a RF-333 auth changes
+						pick 1bfb8d42e2 RF-333 refactors
+						pick 4476d056a8 RF-333 fixed lint
+						pick 86211e0b7e RF-333 typo
+						pick baa362a90f RF-333 fixed flow
+
+						# Rebase 60e38a8a87..baa362a90f onto 60e38a8a87 (5 commands)
+						#
+						# Commands:
+						# p, pick = use commit
+						# r, reword = use commit, but edit the commit message
+						# e, edit = use commit, but stop for amending
+						# s, squash = use commit, but meld into previous commit
+						# f, fixup = like "squash", but discard this commit`s log message
+						# x, exec = run command (the rest of the line) using shell
+						# d, drop = remove commit
+						#
+						# These lines can be re-ordered; they are executed from top to bottom.
+						#
+						# If you remove a line here THAT COMMIT WILL BE LOST.
+						#
+						# However, if you remove everything, the rebase will be aborted.
+						#
+						# Note that empty commits are commented out
+						```
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						The text is opened in your default text editor (vim, emacs, ...).
+
+						Pick actions for commits you wan't to update (squash, change, drop, ...) by changing the word / letter in front of them. <!-- .element: class="fragment" -->
+
+						When you're done, save and exit the editor. In case you you wan't to exit the editor without continuing the rebase process, in vim you can exit the editor with an error code by doing ":cq". <!-- .element: class="fragment" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						If you encounter conflicts with the commits of the branch you're rebasing onto, rebase will stop and ask you to resolve them. This can happen repeatedly during the rebase process if multiple commits introduce changes in the files you also changed.
+
+						When you resolved the conflicts and staged the changes, you can resume the rebase process by calling: <!-- .element: class="fragment" -->
+
+						```
+						git rebase --continue
+						``` <!-- .element: class="fragment" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						In case there are too many conflicts and you start feeling like rebasing was a bad choice, you can go back to the state before rebasing started by calling:
+
+						```
+						git rebase --abort
+						``` <!-- .element: class="fragment" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						## The golden rule of rebasing
+
+						Never use it on public branches / on branches that are shared by multiple team members. Doing so would result in broken collaboration workflow and a lot of confusion. <!-- .element: class="fragment" -->
+
+						Before doing a rebase always ask yourself:  <!-- .element: class="fragment" -->
+
+						**_Is anyone else working on this branch?_** <!-- .element: class="fragment" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						## Rebase on top of a commit in your feature branch
+
+						Rebase can also be used just to fix up the last few commits of your current branch.
+
+						```
+						git rebase -i HEAD~3
+						``` <!-- .element: class="fragment" -->
+
+						It doesn't move the branch, just enables you to interactively rewrite the 3 commits that follow the HEAD~3 commit.<!-- .element: class="fragment" -->
+
+						This will not incorporate upstream changes into the feature branch. <!-- .element: class="fragment" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						## One more way how to keep your commit history cleaner
+
+						```git commit --amend``` <!-- .element: class="fragment" -->
+
+						Adds staged changes to the latest commit, but it doens't just alter it. It replaces the latest commit with a new commit that combines changes form latest commit with your staged changes. <!-- .element: class="fragment" -->
+
+						In case there are no staged changes, it just opens up a text editor and allows you to change the commit message. <!-- .element: class="fragment" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						Amend can also be used during an interactive rebase when you select the "edit" option for a commit.
+
+
+						```
+							$ git rebase -i HEAD~3
+							Stopped at f7f3f6d... changed my name a bit
+							You can amend the commit now, with
+
+								   git commit --amend
+
+							Once you’re satisfied with your changes, run
+
+								   git rebase --continue
+						```
+
+						Adds staged changes to the laxtest commit, but it doens't just alter it. It replaces the latest commit with a new commit that combines changes form latest commit with your staged changes.
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template class="fragment grow">
+						## Why should I care about a clean git history?
+
+
+						```git log```<!-- .element: class="fragment" -->
+
+						```git shortlog``` <!-- .element: class="fragment" -->
+
+						```git bisect``` <!-- .element: class="fragment" -->
+
+
+						Inspecting the project history log or searching for the point in history where some changes were introduced are examples of situations where having a cleaner history can make your life easier. <!-- .element: class="fragment" -->
+					</textarea>
+				</section>
+
+				<!--<section data-markdown>-->
+					<!--<textarea data-template class="fragment grow">-->
+						<!--| Command	    | Scope         | Common use cases                                                     |-->
+						<!--| -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; |:-&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;:| &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;:|-->
+						<!--| git reset     | Commit-level  | Discard commits in a private branch or throw away uncommited changes |-->
+						<!--| git reset     | File-level    | Unstage a file                                                       |-->
+						<!--| git checkout  | Commit-level  | Switch between branches or inspect old snapshots                     |-->
+						<!--| git checkout  | File-level    | Discard changes in the working directory                             |-->
+						<!--| git revert    | Commit-level  | Undo commits in a public branch                                      |-->
+						<!--| git revert    | File-level    | (N/A)                                                                |-->
+					<!--</textarea>-->
+				<!--</section>-->
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
